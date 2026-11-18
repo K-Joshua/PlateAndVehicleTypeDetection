@@ -1,3 +1,4 @@
+
 name: Deploy FastAPI AI Service to Lightsail
 
 on:
@@ -19,7 +20,7 @@ jobs:
           username: ${{ secrets.LIGHTSAIL_USER }}
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
           port: ${{ secrets.LIGHTSAIL_PORT }}
-          source: "API/*"
+          source: "API/*,requirements.txt,Models/*"
           target: "/home/${{ secrets.LIGHTSAIL_USER }}/parking_ai_service"
           strip_components: 1
 

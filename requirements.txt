@@ -1,7 +1,8 @@
 ultralytics
 fastapi
-uvicorn
+uvicorn[standard]
 python-multipart
-easyocr
-opencv-python
+paddleocr
+paddlepaddle
+opencv-python-headless
 pydantic-settings
