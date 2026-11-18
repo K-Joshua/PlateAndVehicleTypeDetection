@@ -3,7 +3,8 @@ name: Deploy FastAPI AI Service to Lightsail
 
 on:
   push:
-    branches: main
+    branches:
+      - main
 
 jobs:
   deploy:
@@ -13,17 +14,41 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Upload API to Server via SCP
+      # Upload FastAPI application
+      - name: Upload API to Server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.LIGHTSAIL_HOST }}
           username: ${{ secrets.LIGHTSAIL_USER }}
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
           port: ${{ secrets.LIGHTSAIL_PORT }}
-          source: "API/*,requirements.txt,Models/*"
+          source: "API/*"
           target: "/home/${{ secrets.LIGHTSAIL_USER }}/parking_ai_service"
           strip_components: 1
 
+      # Upload YOLO models
+      - name: Upload Models to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          port: ${{ secrets.LIGHTSAIL_PORT }}
+          source: "Models"
+          target: "/home/${{ secrets.LIGHTSAIL_USER }}/parking_ai_service"
+
+      # Upload Python dependencies
+      - name: Upload Requirements to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          port: ${{ secrets.LIGHTSAIL_PORT }}
+          source: "requirements.txt"
+          target: "/home/${{ secrets.LIGHTSAIL_USER }}/parking_ai_service"
+
+      # Install dependencies and restart FastAPI
       - name: Execute Remote SSH Commands
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -37,11 +62,28 @@ jobs:
 
             cd /home/${{ secrets.LIGHTSAIL_USER }}/parking_ai_service
 
+            echo "Checking uploaded files..."
+            ls -la
+            ls -la Models/
+
+            test -f requirements.txt || {
+              echo "ERROR: requirements.txt was not uploaded!"
+              exit 1
+            }
+
+            echo "Creating virtual environment..."
             python3 -m venv .venv
 
             source .venv/bin/activate
 
+            echo "Installing Python dependencies..."
             pip install --upgrade pip
             pip install -r requirements.txt
 
+            echo "Restarting FastAPI service..."
             sudo systemctl restart parking-ai.service
+
+            echo "Checking service status..."
+            sudo systemctl status parking-ai.service --no-pager
+
+            echo "Deployment completed successfully!"
