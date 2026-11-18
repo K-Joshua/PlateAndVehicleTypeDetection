@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# FastAPI / temporary files
+*.tmp
+*.temp
+
+# YOLO / Ultralytics
+runs/
+*.cache
+
+# PaddleOCR
+.paddleocr/
+.cache/
+
+# Generated images
+Assets/plate_crop.jpg
+
+# Environment variables
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

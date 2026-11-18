@@ -1,0 +1,46 @@
+name: Deploy FastAPI AI Service to Lightsail
+
+on:
+  push:
+    branches: main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Upload API to Server via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          port: ${{ secrets.LIGHTSAIL_PORT }}
+          source: "API/*"
+          target: "/home/${{ secrets.LIGHTSAIL_USER }}/parking_ai_service"
+          strip_components: 1
+
+      - name: Execute Remote SSH Commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          port: ${{ secrets.LIGHTSAIL_PORT }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+
+            cd /home/${{ secrets.LIGHTSAIL_USER }}/parking_ai_service
+
+            python3 -m venv .venv
+
+            source .venv/bin/activate
+
+            pip install --upgrade pip
+            pip install -r requirements.txt
+
+            sudo systemctl restart parking-ai.service
