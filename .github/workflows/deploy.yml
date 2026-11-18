@@ -1,4 +1,3 @@
-
 name: Deploy FastAPI AI Service to Lightsail
 
 on:
@@ -16,19 +15,23 @@ jobs:
 
       - name: Verify Repository Files
         run: |
+          echo "Checking repository..."
           ls -la
-          test -d API
-          test -d Models
-          test -f requirements.txt
+          ls -la API/App/
+          ls -la API/App/Models/
 
-      - name: Upload Application Files to Lightsail
+          test -d API
+          test -f requirements.txt
+          test -d API/App/Models
+
+      - name: Upload Application to Lightsail
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.LIGHTSAIL_HOST }}
           username: ${{ secrets.LIGHTSAIL_USER }}
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
           port: ${{ secrets.LIGHTSAIL_PORT }}
-          source: "API,Models,requirements.txt"
+          source: "API,requirements.txt"
           target: "/home/${{ secrets.LIGHTSAIL_USER }}/parking_ai_service"
           overwrite: true
 
@@ -47,9 +50,10 @@ jobs:
 
             echo "Checking uploaded files..."
             ls -la
-            test -d API
-            test -d Models
+            ls -la API/App/Models/
+
             test -f requirements.txt
+            test -d API/App/Models
 
             echo "Creating virtual environment..."
             python3 -m venv .venv
@@ -60,10 +64,10 @@ jobs:
             pip install --upgrade pip
             pip install -r requirements.txt
 
-            echo "Restarting FastAPI..."
+            echo "Restarting FastAPI service..."
             sudo systemctl restart parking-ai.service
 
-            echo "Checking service..."
+            echo "Checking service status..."
             sudo systemctl status parking-ai.service --no-pager
 
-            echo "Deployment completed!"
+            echo "Deployment completed successfully!"
