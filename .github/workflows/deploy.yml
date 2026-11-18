@@ -14,42 +14,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Upload FastAPI application
-      - name: Upload API to Server
+      - name: Verify Repository Files
+        run: |
+          ls -la
+          test -d API
+          test -d Models
+          test -f requirements.txt
+
+      - name: Upload Application Files to Lightsail
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.LIGHTSAIL_HOST }}
           username: ${{ secrets.LIGHTSAIL_USER }}
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
           port: ${{ secrets.LIGHTSAIL_PORT }}
-          source: "API/*"
+          source: "API,Models,requirements.txt"
           target: "/home/${{ secrets.LIGHTSAIL_USER }}/parking_ai_service"
-          strip_components: 1
+          overwrite: true
 
-      # Upload YOLO models
-      - name: Upload Models to Server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.LIGHTSAIL_HOST }}
-          username: ${{ secrets.LIGHTSAIL_USER }}
-          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
-          port: ${{ secrets.LIGHTSAIL_PORT }}
-          source: "Models"
-          target: "/home/${{ secrets.LIGHTSAIL_USER }}/parking_ai_service"
-
-      # Upload Python dependencies
-      - name: Upload Requirements to Server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.LIGHTSAIL_HOST }}
-          username: ${{ secrets.LIGHTSAIL_USER }}
-          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
-          port: ${{ secrets.LIGHTSAIL_PORT }}
-          source: "requirements.txt"
-          target: "/home/${{ secrets.LIGHTSAIL_USER }}/parking_ai_service"
-
-      # Install dependencies and restart FastAPI
-      - name: Execute Remote SSH Commands
+      - name: Install Dependencies and Restart Service
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.LIGHTSAIL_HOST }}
@@ -64,26 +47,23 @@ jobs:
 
             echo "Checking uploaded files..."
             ls -la
-            ls -la Models/
-
-            test -f requirements.txt || {
-              echo "ERROR: requirements.txt was not uploaded!"
-              exit 1
-            }
+            test -d API
+            test -d Models
+            test -f requirements.txt
 
             echo "Creating virtual environment..."
             python3 -m venv .venv
 
             source .venv/bin/activate
 
-            echo "Installing Python dependencies..."
+            echo "Installing dependencies..."
             pip install --upgrade pip
             pip install -r requirements.txt
 
-            echo "Restarting FastAPI service..."
+            echo "Restarting FastAPI..."
             sudo systemctl restart parking-ai.service
 
-            echo "Checking service status..."
+            echo "Checking service..."
             sudo systemctl status parking-ai.service --no-pager
 
-            echo "Deployment completed successfully!"
+            echo "Deployment completed!"
