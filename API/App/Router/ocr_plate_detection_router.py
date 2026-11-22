@@ -64,7 +64,7 @@ async def read_license_plate(
             temporary_image_path
         )
 
-        plate_image_path = (gen_plate_num.generate_plate_jpeg_after_detection.crop_platenumber_N_save_crop_picture_to_assets(temporary_image_path)
+        plate_image_path = (gen_plate_num.generate_vehicle_detection.detect_vehicle(temporary_image_path)
         )
 
         if plate_image_path is None:
