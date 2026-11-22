@@ -4,8 +4,8 @@ from pathlib import Path
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
-from Dto import car_type_response_dto
-from Helper import yolo_vehicle_type_helper as gen_vehicle
+from ..Dto import car_type_response_dto
+from ..Helper import yolo_vehicle_type_helper as gen_vehicle
 
 
 logger = logging.getLogger(__name__)

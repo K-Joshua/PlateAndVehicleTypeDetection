@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 
 
-from Router import ocr_plate_detection_router, yolo_car_type_detection_route
+from .Router import ocr_plate_detection_router, yolo_car_type_detection_route
 
 
 # from Router import ai_group_route

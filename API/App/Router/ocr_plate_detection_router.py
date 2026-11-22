@@ -6,9 +6,9 @@ from pathlib import Path
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from paddleocr import PaddleOCR
 
-from Helper import plate_detection_helper as gen_plate_num
-from Helper import delete_picture_helper as del_picture
-from Dto import plate_data_dto
+from ..Helper import plate_detection_helper as gen_plate_num
+from ..Helper import delete_picture_helper as del_picture
+from ..Dto import plate_data_dto
 
 logger = logging.getLogger(__name__)
 
