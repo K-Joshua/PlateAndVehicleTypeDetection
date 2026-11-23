@@ -55,6 +55,15 @@ jobs:
             test -f requirements.txt
             test -d API/App/Models
 
+            echo "Fixing API package..."
+
+            rm -f API/__init__.py
+            touch API/__init__.py
+
+            echo "Checking API/__init__.py..."
+            ls -l API/__init__.py
+            cat API/__init__.py
+
             echo "Creating virtual environment..."
 
             if [ ! -d ".venv" ]; then
@@ -66,6 +75,10 @@ jobs:
             echo "Installing dependencies..."
             pip install --upgrade pip
             pip install -r requirements.txt
+
+            echo "Testing FastAPI import..."
+
+            python -c "import API; print('API package import successful')"
 
             echo "Restarting FastAPI service..."
             sudo systemctl restart parking-ai.service
