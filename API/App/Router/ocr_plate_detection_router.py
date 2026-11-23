@@ -35,7 +35,7 @@ def is_valid_plate(text: str):
 
 
 @plate.post("/read", response_model=plate_data_dto.PlateResponseDTO)
-async def read_license_plate( isEntry : bool,
+async def read_license_plate(log_id :str, isEntry : bool,
     image: UploadFile = File(...)
 ):
     plate_image_path = None
