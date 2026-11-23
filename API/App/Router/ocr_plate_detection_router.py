@@ -18,6 +18,7 @@ PLATE_PATTERNS = [
     r"^[0-9]{3}[A-Z]{3}$",
     r"^[A-Z][0-9]{3}[A-Z]{2}$",
     r"^[A-Z]{2}[0-9]{5}$",
+    r"^[A-Z]{3}[0-9]{3}"
 ]
 
 ocr = PaddleOCR(use_textline_orientation=True,lang="en",enable_mkldnn=False)
