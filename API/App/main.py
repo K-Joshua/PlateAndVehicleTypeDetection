@@ -1,10 +1,10 @@
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
-from db import create_db_and_tables
+from .db import create_db_and_tables
 
 
-from .Router import ocr_plate_detection_router, yolo_car_type_detection_route
+from .Router import ocr_plate_detection_router, yolo_car_type_detection_route, find_same_logID_router
 
 
 # from Router import ai_group_route
@@ -38,3 +38,4 @@ app.add_middleware(
 
 app.include_router(ocr_plate_detection_router.plate)
 app.include_router(yolo_car_type_detection_route.vehicle)
+app.include_router(find_same_logID_router.router)
