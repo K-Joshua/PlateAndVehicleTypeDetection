@@ -1,45 +1,25 @@
 import cv2
-import numpy as np
-
 from ultralytics import YOLO
 from pathlib import Path
 
 
 class generate_plate_jpeg_after_detection:
+    def crop_platenumber_N_save_crop_picture_to_assets(image_path):
 
-    def crop_platenumber_N_save_crop_picture_to_assets(image):
-
-        MODEL_PATH = (
-            Path(__file__).parent.parent
-            / "Models"
-            / "license-plate-finetune-v1n.pt"
-        )
-
-        OUTPUT_PATH = (
-            Path(__file__).parent.parent
-            / "Assets"
-            / "plate_crop.jpg"
-        )
+        MODEL_PATH = Path(__file__).parent.parent / "Models" / "license-plate-finetune-v1n.pt"
+        GEN_IMAGE_PATH = Path(__file__).parent.parent / "Assets" / "plate_crop.jpg"
 
         model = YOLO(str(MODEL_PATH))
 
-        image_data = image.file.read()
+        image = cv2.imread(str(image_path))
 
-        image_array = cv2.imdecode(
-            np.frombuffer(
-                image_data,
-                dtype=np.uint8
-            ),
-            cv2.IMREAD_COLOR
-        )
-
-        if image_array is None:
+        if image is None:
             raise FileNotFoundError(
-                "Could not decode uploaded image."
+                f"Could not load image: {image_path}"
             )
 
         results = model.predict(
-            source=image_array,
+            source=image,
             conf=0.25
         )
 
@@ -62,17 +42,17 @@ class generate_plate_jpeg_after_detection:
                     f"Coordinates: ({x1}, {y1}) -> ({x2}, {y2})"
                 )
 
-                plate = image_array[y1:y2, x1:x2]
+                plate = image[y1:y2, x1:x2]
 
                 cv2.imwrite(
-                    str(OUTPUT_PATH),
+                    str(GEN_IMAGE_PATH),
                     plate
                 )
 
                 print(
-                    f"Saved: {OUTPUT_PATH}"
+                    "Saved: plate_crop.jpg"
                 )
 
-                return OUTPUT_PATH
+                return GEN_IMAGE_PATH
 
-        return None 
+        return None
