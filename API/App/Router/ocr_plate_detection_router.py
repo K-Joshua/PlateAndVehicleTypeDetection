@@ -5,10 +5,13 @@ from pathlib import Path
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from paddleocr import PaddleOCR
+from sqlmodel import Session
 
 from ..Helper import plate_detection_helper as gen_plate_num
 from ..Helper import delete_picture_helper as del_picture
 from ..Dto import plate_data_dto
+from ..model import Vehicle_Plate
+from ..db import engine
 
 logger = logging.getLogger(__name__)
 
@@ -21,9 +24,17 @@ PLATE_PATTERNS = [
     r"^[A-Z]{3}[0-9]{3}"
 ]
 
-ocr = PaddleOCR(use_textline_orientation=True,lang="en",enable_mkldnn=False)
+ocr = PaddleOCR(
+    use_textline_orientation=True,
+    lang="en",
+    enable_mkldnn=False
+)
 
-plate = APIRouter(prefix="/Plate",tags=["License Plate Recognition"])
+plate = APIRouter(
+    prefix="/Plate",
+    tags=["License Plate Recognition"]
+)
+
 
 def is_valid_plate(text: str):
     text = text.upper().replace(" ", "").strip()
@@ -34,8 +45,13 @@ def is_valid_plate(text: str):
     )
 
 
-@plate.post("/read", response_model=plate_data_dto.PlateResponseDTO)
-async def read_license_plate(log_id :str, isEntry : bool,
+@plate.post(
+    "/read",
+    response_model=plate_data_dto.PlateResponseDTO
+)
+async def read_license_plate(
+    log_id: str,
+    isEntry: bool,
     image: UploadFile = File(...)
 ):
     plate_image_path = None
@@ -43,7 +59,9 @@ async def read_license_plate(log_id :str, isEntry : bool,
 
     try:
         logger.info(
-            "License plate recognition started: %s",
+            "License plate recognition started: log_id=%s, isEntry=%s, filename=%s",
+            log_id,
+            isEntry,
             image.filename
         )
 
@@ -65,7 +83,12 @@ async def read_license_plate(log_id :str, isEntry : bool,
             temporary_image_path
         )
 
-        plate_image_path = (gen_plate_num.generate_plate_jpeg_after_detection.crop_platenumber_N_save_crop_picture_to_assets(temporary_image_path)
+        plate_image_path = (
+            gen_plate_num
+            .generate_plate_jpeg_after_detection
+            .crop_platenumber_N_save_crop_picture_to_assets(
+                temporary_image_path
+            )
         )
 
         if plate_image_path is None:
@@ -122,6 +145,24 @@ async def read_license_plate(log_id :str, isEntry : bool,
             best_plate["plate_number"]
         )
 
+        # SAVE PLATE RESULT
+        vehicle_plate = Vehicle_Plate(
+            log_id=log_id,
+            vehicle_plate=best_plate["plate_number"]
+        )
+
+        with Session(engine) as session:
+            session.add(vehicle_plate)
+            session.commit()
+            session.refresh(vehicle_plate)
+
+        logger.info(
+            "Vehicle plate saved: log_id=%s, plate=%s, isEntry=%s",
+            log_id,
+            best_plate["plate_number"],
+            isEntry
+        )
+
         return plate_data_dto.PlateResponseDTO(
             request_status="success",
             status_code=200,
@@ -129,7 +170,7 @@ async def read_license_plate(log_id :str, isEntry : bool,
                 plate_number=best_plate["plate_number"],
                 confidence=best_plate["confidence"]
             )
-)
+        )
 
     except HTTPException:
         raise
