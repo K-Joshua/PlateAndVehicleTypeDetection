@@ -8,6 +8,11 @@ __pycache__/
 venv/
 env/
 
+#settings
+API/App/settings.py
+
+API/.alembic
+
 # Python cache
 .pytest_cache/
 .mypy_cache/

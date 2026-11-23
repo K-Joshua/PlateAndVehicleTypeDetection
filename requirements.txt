@@ -6,3 +6,6 @@ paddleocr
 paddlepaddle
 opencv-python-headless
 pydantic-settings
+sqlmodel
+psycopg[binary]
+alembic

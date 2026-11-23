@@ -1,6 +1,7 @@
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
+from db import create_db_and_tables
 
 
 from .Router import ocr_plate_detection_router, yolo_car_type_detection_route
@@ -17,6 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try: 
+        create_db_and_tables()
         yield
     except Exception as e:
         print(f"Failed to create DB tables: {e}")
