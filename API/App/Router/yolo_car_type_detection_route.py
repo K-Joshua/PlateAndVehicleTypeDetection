@@ -3,27 +3,48 @@ import tempfile
 from pathlib import Path
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
+from sqlmodel import Session
 
 from ..Dto import car_type_response_dto
 from ..Helper import yolo_vehicle_type_helper as gen_vehicle
+from ..Models.vehicle_model import Vehicle_Type
+from ..Database.db import engine
 
 
 logger = logging.getLogger(__name__)
 
 
-vehicle = APIRouter(prefix="/Vehicle",tags=["Vehicle Detection"])
+vehicle = APIRouter(
+    prefix="/Vehicle",
+    tags=["Vehicle Detection"]
+)
 
 
-@vehicle.post("/detect",response_model=car_type_response_dto.VehicleResponseDTO)
-async def detect_vehicle(image: UploadFile = File(...)):
+@vehicle.post(
+    "/detect",
+    response_model=car_type_response_dto.VehicleResponseDTO
+)
+async def detect_vehicle(
+    log_id: str,
+    image: UploadFile = File(...)
+):
     temporary_image_path = None
 
     try:
-        logger.info("Vehicle detection started: %s",image.filename)
+        logger.info(
+            "Vehicle detection started: log_id=%s, filename=%s",
+            log_id,
+            image.filename
+        )
 
-        suffix = Path(image.filename or ".jpg").suffix
+        suffix = Path(
+            image.filename or ".jpg"
+        ).suffix
 
-        with tempfile.NamedTemporaryFile(delete=False,suffix=suffix) as temp_image:
+        with tempfile.NamedTemporaryFile(
+            delete=False,
+            suffix=suffix
+        ) as temp_image:
 
             temporary_image_path = Path(
                 temp_image.name
@@ -33,7 +54,13 @@ async def detect_vehicle(image: UploadFile = File(...)):
 
             temp_image.write(image_data)
 
-        detected_vehicles = (gen_vehicle.generate_vehicle_detection.detect_vehicle(temporary_image_path))
+        detected_vehicles = (
+            gen_vehicle
+            .generate_vehicle_detection
+            .detect_vehicle(
+                temporary_image_path
+            )
+        )
 
         if not detected_vehicles:
             raise HTTPException(
@@ -42,6 +69,7 @@ async def detect_vehicle(image: UploadFile = File(...)):
             )
 
         if len(detected_vehicles) > 1:
+
             logger.warning(
                 "Multiple vehicles detected: %s vehicles.",
                 len(detected_vehicles)
@@ -54,8 +82,34 @@ async def detect_vehicle(image: UploadFile = File(...)):
                 data=detected_vehicles
             )
 
+        detected_vehicle = detected_vehicles[0]
+
+        vehicle_type = detected_vehicle["vehicle_type"]
+
         logger.info(
-            "Vehicle detection completed."
+            "Vehicle detected: log_id=%s, vehicle_type=%s",
+            log_id,
+            vehicle_type
+        )
+
+        # Save vehicle type using the same log_id
+        vehicle_record = Vehicle_Type(
+            log_id=log_id,
+            vehicle_type=vehicle_type
+        )
+
+        with Session(engine) as session:
+
+            session.add(vehicle_record)
+
+            session.commit()
+
+            session.refresh(vehicle_record)
+
+        logger.info(
+            "Vehicle type saved: log_id=%s, vehicle_type=%s",
+            log_id,
+            vehicle_type
         )
 
         return car_type_response_dto.VehicleResponseDTO(
@@ -83,7 +137,7 @@ async def detect_vehicle(image: UploadFile = File(...)):
         if temporary_image_path:
 
             try:
-                temporary_image_path.unlink(
+                   temporary_image_path.unlink(
                     missing_ok=True
                 )
 

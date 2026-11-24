@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from .db import create_db_and_tables
 
 
-from .Router import ocr_plate_detection_router, yolo_car_type_detection_route, find_same_logID_router, get_total_count_vehicle
+from .Router import ocr_plate_detection_router, yolo_car_type_detection_route, find_same_logID_router, get_total_count_vehicle, vehicle_router
 
 
 # from Router import ai_group_route
@@ -40,3 +40,4 @@ app.include_router(ocr_plate_detection_router.plate)
 app.include_router(yolo_car_type_detection_route.vehicle)
 app.include_router(find_same_logID_router.router)
 app.include_router(get_total_count_vehicle.statistics)
+app.include_router(vehicle_router.router)
