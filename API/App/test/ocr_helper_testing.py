@@ -1,12 +1,14 @@
 import re
 from paddleocr import PaddleOCR
-from App.Helper import plate_detection_helper as gen_plate_num, delete_picture_helper as del_picture
+from ..Helper import plate_detection_helper as gen_plate_num, delete_picture_helper as del_picture
 
 PLATE_PATTERNS = [
     r"^[A-Z]{3}[0-9]{4}$",  # ABC1234
     r"^[0-9]{3}[A-Z]{3}$",  # 123ABC
     r"^[A-Z][0-9]{3}[A-Z]{2}$",  # A123BC
     r"^[A-Z]{2}[0-9]{5}$",  # AB12345
+    r"^[A-Z]{3}",
+    r"^[0-9]{3}",
 ]
 
 
