@@ -7,8 +7,8 @@ from sqlmodel import Session
 
 from ..Dto import car_type_response_dto
 from ..Helper import yolo_vehicle_type_helper as gen_vehicle
-from ..Models.vehicle_model import Vehicle_Type
-from ..Database.db import engine
+from ..model import Vehicle_Type
+from ..db import engine
 
 
 logger = logging.getLogger(__name__)
