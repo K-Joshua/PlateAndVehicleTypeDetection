@@ -41,7 +41,7 @@ def get_all_vehicle_images(
 # GET - Get latest image
 @router.get("/image/latest")
 def get_latest_vehicle_image(
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_db)
 ):
     vehicle = session.exec(
         select(vehicle_module)
