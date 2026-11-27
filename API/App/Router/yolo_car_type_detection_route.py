@@ -25,15 +25,13 @@ vehicle = APIRouter(
     response_model=car_type_response_dto.VehicleResponseDTO
 )
 async def detect_vehicle(
-    log_id: str,
     image: UploadFile = File(...)
 ):
     temporary_image_path = None
 
     try:
         logger.info(
-            "Vehicle detection started: log_id=%s, filename=%s",
-            log_id,
+            "Vehicle detection started: filename=%s",
             image.filename
         )
 
@@ -87,14 +85,12 @@ async def detect_vehicle(
         vehicle_type = detected_vehicle["vehicle_type"]
 
         logger.info(
-            "Vehicle detected: log_id=%s, vehicle_type=%s",
-            log_id,
+            "Vehicle detected: vehicle_type=%s",
             vehicle_type
         )
 
-        # Save vehicle type using the same log_id
+        # Save vehicle type
         vehicle_record = Vehicle_Type(
-            log_id=log_id,
             vehicle_type=vehicle_type
         )
 
@@ -107,8 +103,7 @@ async def detect_vehicle(
             session.refresh(vehicle_record)
 
         logger.info(
-            "Vehicle type saved: log_id=%s, vehicle_type=%s",
-            log_id,
+            "Vehicle type saved: vehicle_type=%s",
             vehicle_type
         )
 
@@ -137,7 +132,7 @@ async def detect_vehicle(
         if temporary_image_path:
 
             try:
-                   temporary_image_path.unlink(
+                temporary_image_path.unlink(
                     missing_ok=True
                 )
 

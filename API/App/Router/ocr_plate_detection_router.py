@@ -50,7 +50,6 @@ def is_valid_plate(text: str):
     response_model=plate_data_dto.PlateResponseDTO
 )
 async def read_license_plate(
-    log_id: str,
     isEntry: bool,
     image: UploadFile = File(...)
 ):
@@ -59,8 +58,7 @@ async def read_license_plate(
 
     try:
         logger.info(
-            "License plate recognition started: log_id=%s, isEntry=%s, filename=%s",
-            log_id,
+            "License plate recognition started: isEntry=%s, filename=%s",
             isEntry,
             image.filename
         )
@@ -147,7 +145,6 @@ async def read_license_plate(
 
         # SAVE PLATE RESULT
         vehicle_plate = Vehicle_Plate(
-            log_id=log_id,
             vehicle_plate=best_plate["plate_number"]
         )
 
@@ -157,8 +154,7 @@ async def read_license_plate(
             session.refresh(vehicle_plate)
 
         logger.info(
-            "Vehicle plate saved: log_id=%s, plate=%s, isEntry=%s",
-            log_id,
+            "Vehicle plate saved: plate=%s, isEntry=%s",
             best_plate["plate_number"],
             isEntry
         )
