@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
+from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, Response
 from sqlmodel import Session, select
 from sqlalchemy import LargeBinary
 
@@ -32,7 +32,22 @@ async def upload_image(
         "message": "Image uploaded successfully",
         "image_id": new_image.image_id
     }
+    
+# GET - Retrieve latest captured image as JPEG
+@router.get("/latest")
+def get_latest_image(
+    session: Session = Depends(get_db)
+):
+    statement = select(image_module).order_by(image_module.image_id.desc()).limit(1)
+    image = session.exec(statement).first()
 
+    if not image:
+        raise HTTPException(status_code=404, detail="No images found")
+
+    return Response(
+        content=image.image_data,
+        media_type="image/jpeg"
+    )
 
 # GET - Retrieve image
 @router.get("/{image_id}")
@@ -49,3 +64,4 @@ def get_image(
         "image_id": image.image_id,
         "image_data": image.image_data.hex()
     }
+
